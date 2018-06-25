@@ -1,0 +1,6 @@
+runtime: go
+env: flex
+env_variables:
+  ASCEND_HOSTING_POSTGRES_CONNECTION: "user=postgres password=postgres dbname=ascend-hosting host=/cloudsql/ascend-hosting-1:us-east1:ascend-hosting"
+beta_settings:
+  cloud_sql_instances: ascend-hosting-1:us-east1:ascend-hosting
