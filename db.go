@@ -1,13 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	"fmt"
 	"os"
+	"reflect"
 
 	_ "github.com/lib/pq"
 )
 
 var hostSchema = `CREATE TABLE IF NOT EXISTS hosts (
+  id SERIAL PRIMARY KEY,
   first_name VARCHAR(255),
   last_name VARCHAR(255)
 )`
@@ -15,6 +19,53 @@ var hostSchema = `CREATE TABLE IF NOT EXISTS hosts (
 type Host struct {
 	firstName string
 	lastName  string
+}
+
+type errors []string
+
+func (e *errors) concatenate(delimiter string) string {
+	var buffer bytes.Buffer
+	v := reflect.ValueOf(*e)
+
+	for i := 0; i < v.Len(); i++ {
+		buffer.WriteString(v.Index(i).String())
+		if i != v.Len()-1 {
+			buffer.WriteString(delimiter)
+		}
+	}
+
+	return buffer.String()
+}
+
+func (e *errors) none() bool {
+	return reflect.ValueOf(*e).Len() == 0
+}
+
+type validation func(reflect.Value) bool
+
+var lengthGreaterThanZero = func(data reflect.Value) bool {
+	return data.Len() != 0
+}
+
+var hostValidations = map[string]validation{
+	"firstName": lengthGreaterThanZero,
+	"lastName":  lengthGreaterThanZero,
+}
+
+func (h *Host) validate() (errors errors) {
+	v := reflect.ValueOf(*h)
+
+	for i := 0; i < v.NumField(); i++ {
+		fieldName := v.Type().Field(i).Name
+		fieldValue := v.Field(i)
+
+		validation, exists := hostValidations[fieldName]
+		if exists && validation(fieldValue) != true {
+			errors = append(errors, fmt.Sprintf("%v is invalid", fieldName))
+		}
+	}
+
+	return
 }
 
 type DB struct {
@@ -37,8 +88,18 @@ func initDB() (*DB, error) {
 	return &DB{database}, nil
 }
 
-func (db *DB) insertHost(host Host) error {
-	stmt := `INSERT INTO hosts (first_name, last_name) VALUES ($1, $2)`
-	_, err := db.database.Exec(stmt, host.firstName, host.lastName)
-	return err
+func (db *DB) insertHost(host Host) (errors errors) {
+	errors = host.validate()
+
+	if errors.none() {
+		stmt := `INSERT INTO hosts (first_name, last_name) VALUES ($1, $2)`
+		_, err := db.database.Exec(stmt, host.firstName, host.lastName)
+
+		// TODO: separate database errors from validation errors.
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+
+	return errors
 }

@@ -30,32 +30,14 @@ func root(w http.ResponseWriter, req *http.Request) {
 	}
 
 	firstName := req.PostForm.Get("first_name")
-	if len(firstName) == 0 {
-		badRequest(w, "first_name is blank")
-		return
-	}
-
 	lastName := req.PostForm.Get("last_name")
-	if len(lastName) == 0 {
-		badRequest(w, "last_name is blank")
-		return
-	}
-
 	host := Host{firstName, lastName}
-	err = db.insertHost(host)
-	if err != nil {
-		internalError(w, err.Error())
+
+	errors := db.insertHost(host)
+	if !errors.none() {
+		badRequest(w, errors.concatenate(", "))
+		return
 	}
 
 	log.Println("successfully inserted host: %v", host)
-}
-
-func internalError(w http.ResponseWriter, message string) {
-	log.Println(message)
-	http.Error(w, message, http.StatusInternalServerError)
-}
-
-func badRequest(w http.ResponseWriter, message string) {
-	log.Println(message)
-	http.Error(w, message, http.StatusBadRequest)
 }
