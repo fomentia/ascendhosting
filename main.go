@@ -23,7 +23,10 @@ func main() {
 	r.HandleFunc("/hosts/create", createHost).Methods("POST")
 	r.HandleFunc("/students/create", createStudent).Methods("POST")
 
-	http.ListenAndServe(":5000", r)
+	// App Engine routes incoming requests to the appropriate model on port 8080.
+	// https://cloud.google.com/appengine/docs/flexible/custom-runtimes/build#listen_to_port_8080
+	//
+	http.ListenAndServe(":8080", r)
 }
 
 func createHost(w http.ResponseWriter, req *http.Request) {
