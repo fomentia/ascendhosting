@@ -9,6 +9,7 @@ import (
 	"github.com/fomentia/ascendhosting/models"
 )
 
+// TODO: Separate schema from operations.
 var schema = `CREATE TABLE IF NOT EXISTS hosts (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(255) NOT NULL,
@@ -42,17 +43,15 @@ func InitDB() (*DB, error) {
 	return &DB{database}, nil
 }
 
-func (db *DB) Insert(model models.Model) (errors models.Errors) {
-	errors = models.Validate(model)
+func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databaseError error) {
+	validationErrors = models.Validate(model)
 
-	if errors.None() {
+	if validationErrors.None() {
 		err := model.Insert(db.database)
-
-		// TODO: separate database errors from validation errors.
 		if err != nil {
-			errors = append(errors, err.Error())
+			databaseError = err
 		}
 	}
 
-	return errors
+	return
 }

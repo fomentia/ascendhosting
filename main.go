@@ -37,9 +37,12 @@ func createHost(w http.ResponseWriter, req *http.Request) {
 	lastName := req.PostForm.Get("lastName")
 	host := models.Host{firstName, lastName}
 
-	errors := db.Insert(host)
-	if !errors.None() {
-		badRequest(w, errors.Concatenate(", "))
+	validationErrors, databaseError := db.Insert(host)
+	if databaseError != nil {
+		internalError(w, err.Error())
+		return
+	} else if !validationErrors.None() {
+		badRequest(w, validationErrors.Concatenate(", "))
 		return
 	}
 
@@ -58,9 +61,12 @@ func createStudent(w http.ResponseWriter, req *http.Request) {
 	country := req.PostForm.Get("countryOfOrigin")
 	student := models.Student{firstName, lastName, country}
 
-	errors := db.Insert(student)
-	if !errors.None() {
-		badRequest(w, errors.Concatenate(", "))
+	validationErrors, databaseError := db.Insert(student)
+	if databaseError != nil {
+		internalError(w, err.Error())
+		return
+	} else if !validationErrors.None() {
+		badRequest(w, validationErrors.Concatenate(", "))
 		return
 	}
 
