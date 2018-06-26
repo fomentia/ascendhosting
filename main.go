@@ -5,13 +5,16 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
+	"github.com/fomentia/ascendhosting/database"
+	"github.com/fomentia/ascendhosting/models"
 )
 
-var db *DB
+var db *database.DB
 
 func main() {
 	var err error
-	db, err = initDB()
+	db, err = database.InitDB()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,11 +34,11 @@ func root(w http.ResponseWriter, req *http.Request) {
 
 	firstName := req.PostForm.Get("firstName")
 	lastName := req.PostForm.Get("lastName")
-	host := Host{firstName, lastName}
+	host := models.Host{firstName, lastName}
 
-	errors := db.insertHost(host)
-	if !errors.none() {
-		badRequest(w, errors.concatenate(", "))
+	errors := db.Insert(host)
+	if !errors.None() {
+		badRequest(w, errors.Concatenate(", "))
 		return
 	}
 
