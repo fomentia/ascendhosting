@@ -20,12 +20,13 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/hosts/create", root).Methods("POST")
+	r.HandleFunc("/hosts/create", createHost).Methods("POST")
+	r.HandleFunc("/students/create", createStudent).Methods("POST")
 
 	http.ListenAndServe(":5000", r)
 }
 
-func root(w http.ResponseWriter, req *http.Request) {
+func createHost(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
 		internalError(w, err.Error())
@@ -43,4 +44,25 @@ func root(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Println("successfully inserted host: %v", host)
+}
+
+func createStudent(w http.ResponseWriter, req *http.Request) {
+	err := req.ParseForm()
+	if err != nil {
+		internalError(w, err.Error())
+		return
+	}
+
+	firstName := req.PostForm.Get("firstName")
+	lastName := req.PostForm.Get("lastName")
+	country := req.PostForm.Get("countryOfOrigin")
+	student := models.Student{firstName, lastName, country}
+
+	errors := db.Insert(student)
+	if !errors.None() {
+		badRequest(w, errors.Concatenate(", "))
+		return
+	}
+
+	log.Println("successfully inserted student: %v", student)
 }

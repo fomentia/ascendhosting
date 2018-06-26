@@ -13,7 +13,14 @@ var schema = `CREATE TABLE IF NOT EXISTS hosts (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(255) NOT NULL,
   last_name  VARCHAR(255) NOT NULL
-)`
+);
+
+CREATE TABLE IF NOT EXISTS students (
+  id SERIAL PRIMARY KEY,
+  first_name        VARCHAR(255) NOT NULL,
+  last_name         VARCHAR(255) NOT NULL,
+  country_of_origin VARCHAR(255) NOT NULL
+);`
 
 type DB struct {
 	database *sql.DB

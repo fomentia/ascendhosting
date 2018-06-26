@@ -1,9 +1,6 @@
 package models
 
-import (
-	"database/sql"
-	"reflect"
-)
+import "database/sql"
 
 type Host struct {
 	FirstName string
@@ -21,14 +18,4 @@ func (h Host) Validations() map[string]Validation {
 		"FirstName": lengthGreaterThanZero,
 		"LastName":  lengthGreaterThanZero,
 	}
-}
-
-// This should probably go into a validations file along with a bunch
-// of other typical validations.
-var lengthGreaterThanZero = func(data reflect.Value) bool {
-	if data.Kind() != reflect.String {
-		return false
-	}
-
-	return data.Len() != 0
 }
