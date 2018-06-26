@@ -16,20 +16,14 @@ var hostSchema = `CREATE TABLE IF NOT EXISTS hosts (
   last_name VARCHAR(255)
 )`
 
-type Host struct {
-	firstName string
-	lastName  string
-}
-
 type errors []string
 
 func (e *errors) concatenate(delimiter string) string {
 	var buffer bytes.Buffer
-	v := reflect.ValueOf(*e)
 
-	for i := 0; i < v.Len(); i++ {
-		buffer.WriteString(v.Index(i).String())
-		if i != v.Len()-1 {
+	for i := 0; i < len(*e); i++ {
+		buffer.WriteString((*e)[i])
+		if i != len(*e)-1 {
 			buffer.WriteString(delimiter)
 		}
 	}
@@ -38,18 +32,7 @@ func (e *errors) concatenate(delimiter string) string {
 }
 
 func (e *errors) none() bool {
-	return reflect.ValueOf(*e).Len() == 0
-}
-
-type validation func(reflect.Value) bool
-
-var lengthGreaterThanZero = func(data reflect.Value) bool {
-	return data.Len() != 0
-}
-
-var hostValidations = map[string]validation{
-	"firstName": lengthGreaterThanZero,
-	"lastName":  lengthGreaterThanZero,
+	return len(*e) == 0
 }
 
 func (h *Host) validate() (errors errors) {
@@ -66,6 +49,26 @@ func (h *Host) validate() (errors errors) {
 	}
 
 	return
+}
+
+type validation func(reflect.Value) bool
+
+type Host struct {
+	firstName string
+	lastName  string
+}
+
+var lengthGreaterThanZero = func(data reflect.Value) bool {
+	if data.Kind() != reflect.String {
+		return false
+	}
+
+	return data.Len() != 0
+}
+
+var hostValidations = map[string]validation{
+	"firstName": lengthGreaterThanZero,
+	"lastName":  lengthGreaterThanZero,
 }
 
 type DB struct {
