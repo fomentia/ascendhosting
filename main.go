@@ -29,8 +29,8 @@ func root(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	firstName := req.PostForm.Get("first_name")
-	lastName := req.PostForm.Get("last_name")
+	firstName := req.PostForm.Get("firstName")
+	lastName := req.PostForm.Get("lastName")
 	host := Host{firstName, lastName}
 
 	errors := db.insertHost(host)
