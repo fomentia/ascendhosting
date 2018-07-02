@@ -47,7 +47,7 @@ func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databa
 	validationErrors = models.Validate(model)
 
 	if validationErrors.None() {
-		err := model.Insert(db.database)
+		_, err := db.database.Exec(model.Statement(), model.StatementArgs()...)
 		if err != nil {
 			databaseError = err
 		}

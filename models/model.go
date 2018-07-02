@@ -2,13 +2,13 @@ package models
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 	"reflect"
 )
 
 type Model interface {
-	Insert(*sql.DB) error
+	Statement() string
+	StatementArgs() []interface{}
 	Validations() map[string]Validation
 }
 
@@ -33,6 +33,7 @@ func (e *Errors) None() bool {
 	return len(*e) == 0
 }
 
+// TODO: make model type provide fields, don't rely on it being a struct
 func Validate(m Model) (errors Errors) {
 	v := reflect.ValueOf(m)
 	if v.Kind() != reflect.Struct {
