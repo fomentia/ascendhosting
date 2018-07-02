@@ -1,8 +1,13 @@
 package models
 
+import "net/url"
+
 type Host struct {
-	FirstName string
-	LastName  string
+	Values url.Values
+}
+
+func (h Host) Get(fieldName string) string {
+	return h.Values.Get(fieldName)
 }
 
 func (h Host) Statement() string {
@@ -10,12 +15,12 @@ func (h Host) Statement() string {
 }
 
 func (h Host) StatementArgs() []interface{} {
-	return []interface{}{h.FirstName, h.LastName}
+	return []interface{}{h.Values.Get("firstName"), h.Values.Get("lastName")}
 }
 
 func (h Host) Validations() map[string]Validation {
 	return map[string]Validation{
-		"FirstName": lengthGreaterThanZero,
-		"LastName":  lengthGreaterThanZero,
+		"firstName": lengthGreaterThanZero,
+		"lastName":  lengthGreaterThanZero,
 	}
 }

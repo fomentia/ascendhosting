@@ -1,24 +1,7 @@
 package models
 
-import "reflect"
+type Validation func(string) bool
 
-var lengthGreaterThanZero = func(data reflect.Value) bool {
-	allowedTypes := typeList{reflect.String, reflect.Array, reflect.Slice}
-	if !allowedTypes.includes(data.Kind()) {
-		return false
-	}
-
-	return data.Len() != 0
-}
-
-type typeList []reflect.Kind
-
-func (tl typeList) includes(t reflect.Kind) bool {
-	for _, includedType := range tl {
-		if includedType == t {
-			return true
-		}
-	}
-
-	return false
+var lengthGreaterThanZero = func(data string) bool {
+	return len(data) != 0
 }

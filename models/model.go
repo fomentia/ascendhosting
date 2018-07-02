@@ -3,16 +3,14 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 )
 
 type Model interface {
+	Get(string) string
 	Statement() string
 	StatementArgs() []interface{}
 	Validations() map[string]Validation
 }
-
-type Validation func(reflect.Value) bool
 
 type Errors []string
 
@@ -33,20 +31,15 @@ func (e *Errors) None() bool {
 	return len(*e) == 0
 }
 
-// TODO: make model type provide fields, don't rely on it being a struct
 func Validate(m Model) (errors Errors) {
-	v := reflect.ValueOf(m)
-	if v.Kind() != reflect.Struct {
-		errors = append(errors, "Model is not a struct")
-		return
-	}
+	for fieldName, validation := range m.Validations() {
+		fieldValue := m.Get(fieldName)
+		if len(fieldValue) == 0 {
+			errors = append(errors, fmt.Sprintf("%v was not supplied", fieldName))
+			continue
+		}
 
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := v.Type().Field(i).Name
-		fieldValue := v.Field(i)
-
-		validation, exists := m.Validations()[fieldName]
-		if exists && validation(fieldValue) != true {
+		if !validation(fieldValue) {
 			errors = append(errors, fmt.Sprintf("%v is invalid", fieldName))
 		}
 	}
