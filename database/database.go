@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -24,7 +25,7 @@ CREATE TABLE IF NOT EXISTS students (
 );`
 
 type DB struct {
-	database *sql.DB
+	Database *sql.DB
 }
 
 func InitDB() (*DB, error) {
@@ -47,11 +48,54 @@ func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databa
 	validationErrors = models.Validate(model)
 
 	if validationErrors.None() {
-		_, err := db.database.Exec(model.Statement(), model.StatementArgs()...)
+		_, err := db.Database.Exec(model.Statement(), model.StatementArgs()...)
 		if err != nil {
 			databaseError = err
 		}
 	}
 
 	return
+}
+
+type Row map[string]interface{}
+
+func (db *DB) Get(columns string, tableName string) ([]Row, error) {
+	rows := []Row{}
+
+	cursor, err := db.Database.Query(fmt.Sprintf("SELECT %v FROM %v", columns, tableName))
+	if err != nil {
+		return rows, err
+	}
+
+	for cursor.Next() {
+		row := Row{}
+
+		columns, err := cursor.Columns()
+		if err != nil {
+			return rows, err
+		}
+
+		values := make([]string, len(columns))
+		pointers := make([]interface{}, len(columns))
+
+		for index, _ := range values {
+			pointers[index] = &values[index]
+		}
+
+		scanErr := cursor.Scan(pointers...)
+		if scanErr != nil {
+			return rows, err
+		}
+
+		for index, column := range columns {
+			row[column] = values[index]
+		}
+
+		rows = append(rows, row)
+	}
+	if cursor.Err() != nil {
+		return rows, err
+	}
+
+	return rows, nil
 }
