@@ -3,9 +3,11 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 )
 
 type Model interface {
+	Init(url.Values)
 	Get(string) string
 	Statement() string
 	StatementArgs() []interface{}
