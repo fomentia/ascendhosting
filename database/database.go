@@ -25,8 +25,15 @@ CREATE TABLE IF NOT EXISTS students (
   country_of_origin VARCHAR(255) NOT NULL
 );`
 
+type Row map[string]interface{}
+
+type Database interface {
+	Insert(models.Model) (models.Errors, error)
+	Get(models.Model) ([]Row, error)
+}
+
 type DB struct {
-	Database *sql.DB
+	sqlDB *sql.DB
 }
 
 func InitDB() (*DB, error) {
@@ -54,7 +61,7 @@ func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databa
 			model.Columns(),
 			valuePlaceholders(model.Columns()))
 
-		_, err := db.Database.Exec(stmt, model.Values()...)
+		_, err := db.sqlDB.Exec(stmt, model.Values()...)
 		if err != nil {
 			databaseError = err
 		}
@@ -72,12 +79,10 @@ func valuePlaceholders(columnsString string) string {
 	return strings.Join(placeholders, ", ")
 }
 
-type Row map[string]interface{}
-
 func (db *DB) Get(model models.Model) ([]Row, error) {
 	rows := []Row{}
 
-	cursor, err := db.Database.Query(fmt.Sprintf("SELECT %v FROM %v", model.Columns(), model.TableName()))
+	cursor, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v", model.Columns(), model.TableName()))
 	if err != nil {
 		return rows, err
 	}
