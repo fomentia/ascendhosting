@@ -3,23 +3,27 @@ package models
 import "net/url"
 
 type Student struct {
-	Values url.Values
+	data url.Values
 }
 
 func (s *Student) Init(values url.Values) {
-	s.Values = values
+	s.data = values
 }
 
 func (s *Student) Get(fieldName string) string {
-	return s.Values.Get(fieldName)
+	return s.data.Get(fieldName)
 }
 
-func (s *Student) Statement() string {
-	return `INSERT INTO students (first_name, last_name, country_of_origin) VALUES ($1, $2, $3)`
+func (s *Student) TableName() string {
+	return "students"
 }
 
-func (s *Student) StatementArgs() []interface{} {
-	return []interface{}{s.Values.Get("firstName"), s.Values.Get("lastName"), s.Values.Get("countryOfOrigin")}
+func (s *Student) Columns() string {
+	return `first_name, last_name, country_of_origin`
+}
+
+func (s *Student) Values() []interface{} {
+	return []interface{}{s.data.Get("firstName"), s.data.Get("lastName"), s.data.Get("countryOfOrigin")}
 }
 
 func (s *Student) Validations() map[string]Validation {

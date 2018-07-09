@@ -3,23 +3,27 @@ package models
 import "net/url"
 
 type Host struct {
-	Values url.Values
+	data url.Values
 }
 
 func (h *Host) Init(values url.Values) {
-	h.Values = values
+	h.data = values
 }
 
 func (h *Host) Get(fieldName string) string {
-	return h.Values.Get(fieldName)
+	return h.data.Get(fieldName)
 }
 
-func (h *Host) Statement() string {
-	return `INSERT INTO hosts (first_name, last_name) VALUES ($1, $2)`
+func (h *Host) TableName() string {
+	return "hosts"
 }
 
-func (h *Host) StatementArgs() []interface{} {
-	return []interface{}{h.Values.Get("firstName"), h.Values.Get("lastName")}
+func (h *Host) Columns() string {
+	return `first_name, last_name`
+}
+
+func (h *Host) Values() []interface{} {
+	return []interface{}{h.data.Get("firstName"), h.data.Get("lastName")}
 }
 
 func (h *Host) Validations() map[string]Validation {

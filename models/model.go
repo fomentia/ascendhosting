@@ -9,8 +9,9 @@ import (
 type Model interface {
 	Init(url.Values)
 	Get(string) string
-	Statement() string
-	StatementArgs() []interface{}
+	TableName() string
+	Columns() string
+	Values() []interface{}
 	Validations() map[string]Validation
 }
 

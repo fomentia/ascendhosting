@@ -21,9 +21,9 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/hosts", indexHandler("first_name, last_name", "hosts")).Methods("GET")
+	r.HandleFunc("/hosts", indexHandler(&models.Host{})).Methods("GET")
 	r.HandleFunc("/hosts/create", insertHandler(&models.Host{})).Methods("POST")
-	r.HandleFunc("/students", indexHandler("first_name, last_name, country_of_origin", "students")).Methods("GET")
+	r.HandleFunc("/students", indexHandler(&models.Student{})).Methods("GET")
 	r.HandleFunc("/students/create", insertHandler(&models.Student{})).Methods("POST")
 
 	// App Engine routes incoming requests to the appropriate module on port 8080.
@@ -32,21 +32,9 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func makeHandler(fn func(w http.ResponseWriter, req *http.Request)) http.HandlerFunc {
+func indexHandler(model models.Model) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		err := req.ParseForm()
-		if err != nil {
-			internalError(w, err.Error())
-			return
-		}
-
-		fn(w, req)
-	}
-}
-
-func indexHandler(columns string, tableName string) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		rows, err := db.Get(columns, tableName)
+		rows, err := db.Get(model)
 		if err != nil {
 			internalError(w, err.Error())
 		}

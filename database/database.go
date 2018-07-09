@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 
@@ -48,7 +49,12 @@ func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databa
 	validationErrors = models.Validate(model)
 
 	if validationErrors.None() {
-		_, err := db.Database.Exec(model.Statement(), model.StatementArgs()...)
+		stmt := fmt.Sprintf("INSERT INTO %v (%v) VALUES (%v)",
+			model.TableName(),
+			model.Columns(),
+			valuePlaceholders(model.Columns()))
+
+		_, err := db.Database.Exec(stmt, model.Values()...)
 		if err != nil {
 			databaseError = err
 		}
@@ -57,12 +63,21 @@ func (db *DB) Insert(model models.Model) (validationErrors models.Errors, databa
 	return
 }
 
+func valuePlaceholders(columnsString string) string {
+	columns := strings.Split(columnsString, ", ")
+	placeholders := []string{}
+	for index, _ := range columns {
+		placeholders = append(placeholders, fmt.Sprintf("$%v", index+1))
+	}
+	return strings.Join(placeholders, ", ")
+}
+
 type Row map[string]interface{}
 
-func (db *DB) Get(columns string, tableName string) ([]Row, error) {
+func (db *DB) Get(model models.Model) ([]Row, error) {
 	rows := []Row{}
 
-	cursor, err := db.Database.Query(fmt.Sprintf("SELECT %v FROM %v", columns, tableName))
+	cursor, err := db.Database.Query(fmt.Sprintf("SELECT %v FROM %v", model.Columns(), model.TableName()))
 	if err != nil {
 		return rows, err
 	}
