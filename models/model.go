@@ -7,7 +7,7 @@ import (
 )
 
 type Model interface {
-	Init(url.Values)
+	SetValues(url.Values)
 	Get(string) string
 	TableName() string
 	Columns() string

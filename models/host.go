@@ -6,7 +6,7 @@ type Host struct {
 	data url.Values
 }
 
-func (h *Host) Init(values url.Values) {
+func (h *Host) SetValues(values url.Values) {
 	h.data = values
 }
 
@@ -23,7 +23,7 @@ func (h *Host) Columns() string {
 }
 
 func (h *Host) Values() []interface{} {
-	return []interface{}{h.data.Get("firstName"), h.data.Get("lastName")}
+	return []interface{}{h.Get("firstName"), h.Get("lastName")}
 }
 
 func (h *Host) Validations() map[string]Validation {

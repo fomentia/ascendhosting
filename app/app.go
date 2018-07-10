@@ -52,7 +52,7 @@ func InsertHandler(model models.Model) http.HandlerFunc {
 			return
 		}
 
-		model.Init(req.PostForm)
+		model.SetValues(req.PostForm)
 
 		validationErrors, databaseError := DB.Insert(model)
 		if databaseError != nil {

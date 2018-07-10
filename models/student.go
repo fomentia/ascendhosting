@@ -6,7 +6,7 @@ type Student struct {
 	data url.Values
 }
 
-func (s *Student) Init(values url.Values) {
+func (s *Student) SetValues(values url.Values) {
 	s.data = values
 }
 
@@ -23,7 +23,7 @@ func (s *Student) Columns() string {
 }
 
 func (s *Student) Values() []interface{} {
-	return []interface{}{s.data.Get("firstName"), s.data.Get("lastName"), s.data.Get("countryOfOrigin")}
+	return []interface{}{s.Get("firstName"), s.Get("lastName"), s.Get("countryOfOrigin")}
 }
 
 func (s *Student) Validations() map[string]Validation {
