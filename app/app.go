@@ -32,12 +32,12 @@ func IndexHandler(model models.Model) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		rows, err := DB.Get(model)
 		if err != nil {
-			internalError(w, err.Error())
+			responseError(w, err, http.StatusInternalServerError)
 		}
 
 		j, err := json.Marshal(rows)
 		if err != nil {
-			internalError(w, err.Error())
+			responseError(w, err, http.StatusInternalServerError)
 		}
 
 		w.Write(j)
@@ -48,7 +48,7 @@ func InsertHandler(model models.Model) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		err := req.ParseForm()
 		if err != nil {
-			internalError(w, err.Error())
+			responseError(w, err, http.StatusInternalServerError)
 			return
 		}
 
@@ -56,10 +56,10 @@ func InsertHandler(model models.Model) http.HandlerFunc {
 
 		validationErrors, databaseError := DB.Insert(model)
 		if databaseError != nil {
-			internalError(w, databaseError.Error())
+			responseError(w, databaseError, http.StatusInternalServerError)
 			return
 		} else if !validationErrors.None() {
-			badRequest(w, validationErrors.Concatenate(", "))
+			responseError(w, validationErrors, http.StatusBadRequest)
 			return
 		}
 
